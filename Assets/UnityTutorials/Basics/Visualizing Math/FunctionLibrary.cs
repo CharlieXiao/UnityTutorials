@@ -19,16 +19,29 @@ public static class FunctionLibrary
 
     public static Function GetFunction(FunctionName name)
     {
-        return Functions[name];
+        return s_Functions[(int)name];
     }
 
-    private static Dictionary<FunctionName, Function> Functions = new Dictionary<FunctionName, Function>()
+    public static FunctionName GetNextFunction(FunctionName name)
     {
-        { FunctionName.Wave, Wave },
-        { FunctionName.MultiWave, MultiWave },
-        { FunctionName.Ripple, Ripple },
-        { FunctionName.Sphere, Sphere },
-        { FunctionName.Torus, Torus }
+        return (FunctionName)(((int)name + 1)%s_Functions.Length);
+    }
+
+    public static FunctionName GetRandomFunction()
+    {
+        return (FunctionName)Random.Range(0, s_Functions.Length);
+    }
+
+    public static FunctionName GetRandomFunctionOtherThan(FunctionName name)
+    {
+        FunctionName choice = (FunctionName)Random.Range(1, s_Functions.Length);
+        return choice == name ? 0 : choice;
+    }
+    
+
+    private static readonly Function[] s_Functions = 
+    {
+        Wave,MultiWave,Ripple,Sphere,Torus
     };
 
     // 通过参数方程描述曲面
@@ -93,5 +106,11 @@ public static class FunctionLibrary
         p.y = r2 * Sin(phi);
         p.z = s * Cos(theta);
         return p;
+    }
+
+    public static Vector3 Morph(float u, float v, float t, Function from, Function to, float progress)
+    {
+        // using cubic function rather than linear function to make the transition more smooth
+        return Vector3.Lerp(from(u, v, t), to(u, v, t), SmoothStep(0.0f,1.0f,progress));
     }
 }
