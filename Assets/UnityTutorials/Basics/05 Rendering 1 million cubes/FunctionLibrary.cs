@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using static UnityEngine.Mathf;
 
-public static class FunctionLibrary
+namespace Basics_5
+{
+    public static class FunctionLibrary
 {
     // 创建一个函数类型，类似于c++中的 std::function<Vector3(float,float,float)>
     public delegate Vector3 Function(float u, float v, float t);
@@ -113,4 +115,5 @@ public static class FunctionLibrary
         // using cubic function rather than linear function to make the transition more smooth
         return Vector3.Lerp(from(u, v, t), to(u, v, t), SmoothStep(0.0f,1.0f,progress));
     }
+}
 }

@@ -1,0 +1,211 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Common.hlsl"
+// 指定该compute shader的入口函数
+// 类似于fragment shader和vertex shader中通过fragment，vertex指定
+
+#pragma kernel WaveKernel
+#pragma kernel MultiWaveKernel
+#pragma kernel RippleKernel
+#pragma kernel SphereKernel
+#pragma kernel TorusKernel
+
+// #pragma kernel WaveToWaveKernel
+#pragma kernel WaveToMultiWaveKernel
+#pragma kernel WaveToRippleKernel
+#pragma kernel WaveToSphereKernel
+#pragma kernel WaveToTorusKernel
+
+#pragma kernel MultiWaveToWaveKernel
+// #pragma kernel MultiWaveToMultiWaveKernel
+#pragma kernel MultiWaveToRippleKernel
+#pragma kernel MultiWaveToSphereKernel
+#pragma kernel MultiWaveToTorusKernel
+
+#pragma kernel RippleToWaveKernel
+#pragma kernel RippleToMultiWaveKernel
+// #pragma kernel RippleToRippleKernel
+#pragma kernel RippleToSphereKernel
+#pragma kernel RippleToTorusKernel
+
+#pragma kernel SphereToWaveKernel
+#pragma kernel SphereToMultiWaveKernel
+#pragma kernel SphereToRippleKernel
+// #pragma kernel SphereToSphereKernel
+#pragma kernel SphereToTorusKernel
+
+#pragma kernel TorusToWaveKernel
+#pragma kernel TorusToMultiWaveKernel
+#pragma kernel TorusToRippleKernel
+#pragma kernel TorusToSphereKernel
+// #pragma kernel TorusToTorusKernel
+
+
+// 需要代码中提供的参数
+// using real to support mobile platform
+real _Step,_Time,_TransitionProgress;
+
+uint _Resolution;
+
+// 函数中使用的PI
+#define PI 3.14159265358979323846
+
+// 写入的结果
+RWStructuredBuffer<real3> _Positions;
+
+real2 GetUV(uint3 id)
+{
+    // 计算当前texel的中心[0...resolution,0...resolution] -> [0,1]
+    return (id.xy + 0.5) * _Step -1.0;
+}
+
+void SetPosition(uint3 id,real3 position)
+{
+    // make sure id.x and id.y lies in the grid
+    // 由于uint范围是[0,2^31-1]不存在负值
+    if(id.x >= _Resolution || id.y >= _Resolution) return;
+    // 二维转一维
+    // row,column
+    // 且大小维resolution*resolution
+    _Positions[_Resolution * id.x + id.y] = position;
+}
+
+real3 Wave(real u,real v,real t)
+{
+    real3 p;
+    p.x = u;
+    p.z = v;
+    p.y = sin(PI*(u+v+t));
+    return p;
+}
+
+real3 MultiWave(real u,real v,real t)
+{
+    real3 p;
+    p.x = u;
+    p.y = (sin(PI * (u + 0.5f * t)) + 0.5f * sin(2.0f * PI * (v + t)) + sin(PI * (u + v + 0.25f * t))) * 0.4f;
+    p.z = v;
+    return p;
+}
+
+real3 Ripple(real u,real v,real t)
+{
+    const real d = sqrt(u*u+v*v);
+    real3 p;
+    p.x = u;
+    p.y = sin(PI*(4.0f*d-t)) / (1.0f + 10.0f * d);
+    p.z = v;
+    return p;
+}
+
+real3 Sphere(real u,real v,real t)
+{
+    const real r = 0.9f + 0.1f * sin(PI * (12.0f * u + 8.0f * v + t));
+    const real phi = 0.5f * PI * v;
+    const real theta = PI * u;
+    const real s = r * cos(phi);
+    real3 p;
+    p.x = s * sin(theta);
+    p.y = r * sin(phi);
+    p.z = s * cos(theta);
+    return p;
+}
+
+real3 Torus(real u,real v,real t)
+{
+    real r1 = 0.7f + 0.1f * sin(PI * (8.0f * u + 0.5f * t));
+    real r2 = 0.15f + 0.05f * sin(PI * (16.0f * u + 8.0f * v + 3.0f * t));
+    // real r = 0.1f * (9.0f + Sin(PI * (6.0f * u + 4.0f * v + t)));
+    real phi = PI * v;
+    real theta = PI * u;
+    real s = r1 + r2 * cos(phi);
+    real3 p;
+    p.x = s * sin(theta);
+    p.y = r2 * sin(phi);
+    p.z = s * cos(theta);
+    return p;
+}
+
+real SmoothStep(real from,real to,real t)
+{
+    // 必须确保其定义域为[0,1]
+    t = saturate(t);
+    // 三次函数，实际上有点类似sigmoid，但是计算起来相对较简单
+    t = -2.0f * t * t * t + 3.0f * t * t;
+    return lerp(from,to,t);
+}
+
+// [numthreads(8,8,1)]
+// void FunctionMorphKernel(uint3 id:SV_DispathThreadID)
+// {
+//     real2 uv = GetUV(id);
+//     // 计算一个UV下面的两个函数的位置，然后使用插值就可以
+//     real3 from = Sphere(uv.x,uv.y,_Time);
+//     real3 to = Torus(uv.x,uv.y,_Time);
+//     SetPosition(id,lerp(from,to,SmoothStep(0.0f,1.0f,_TransitionProgress)));
+// }
+
+
+// 通过numthreads指定该函数的并行程度
+// numthreads(8,8,1)表示我们运算结果是一个二维的（支持二维的并行），且共划分为64个部分进行并行计算
+// 最终应该修改为_Resolution大小，但是好像不支持动态变更？
+// [numthreads(8,8,1)]
+// void FunctionKernel (uint3 id:SV_DispatchThreadID)
+// {
+//     real2 uv = GetUV(id);
+//     // 首先初始化为0.0
+//     SetPosition(id,Sphere(uv.x,uv.y,_Time));
+//     // id就是 (0,0,0) -> (7,7,0) 共包含64个
+// }
+
+#define KERNEL_FUNCTION(function) \
+    [numthreads(8,8,1)] \
+    void function##Kernel (uint3 id:SV_DispatchThreadID) \
+    { \
+        real2 uv = GetUV(id); \
+        SetPosition(id,function(uv.x,uv.y,_Time)); \
+    }
+
+#define KERNEL_MORPH_FUNCTION(functionA,functionB) \
+    [numthreads(8,8,1)] \
+    void functionA##To##functionB##Kernel (uint3 id:SV_DispatchThreadID) \
+    { \
+        real2 uv = GetUV(id); \
+        SetPosition(id,lerp(functionA(uv.x,uv.y,_Time),functionB(uv.x,uv.y,_Time),SmoothStep(0.0f,1.0f,_TransitionProgress))); \
+    }
+
+// 使用宏的一个缺点是不方便debug，写错了ide没办法检查出来
+KERNEL_FUNCTION(Wave)
+KERNEL_FUNCTION(MultiWave)
+KERNEL_FUNCTION(Ripple)
+KERNEL_FUNCTION(Sphere)
+KERNEL_FUNCTION(Torus)
+
+// KERNEL_MORPH_FUNCTION(Wave,Wave)
+KERNEL_MORPH_FUNCTION(Wave,MultiWave)
+KERNEL_MORPH_FUNCTION(Wave,Ripple)
+KERNEL_MORPH_FUNCTION(Wave,Sphere)
+KERNEL_MORPH_FUNCTION(Wave,Torus)
+
+KERNEL_MORPH_FUNCTION(MultiWave,Wave)
+// KERNEL_MORPH_FUNCTION(MultiWave,MultiWave)
+KERNEL_MORPH_FUNCTION(MultiWave,Ripple)
+KERNEL_MORPH_FUNCTION(MultiWave,Sphere)
+KERNEL_MORPH_FUNCTION(MultiWave,Torus)
+
+KERNEL_MORPH_FUNCTION(Ripple,Wave)
+KERNEL_MORPH_FUNCTION(Ripple,MultiWave)
+// KERNEL_MORPH_FUNCTION(Ripple,Ripple)
+KERNEL_MORPH_FUNCTION(Ripple,Sphere)
+KERNEL_MORPH_FUNCTION(Ripple,Torus)
+
+KERNEL_MORPH_FUNCTION(Sphere,Wave)
+KERNEL_MORPH_FUNCTION(Sphere,MultiWave)
+KERNEL_MORPH_FUNCTION(Sphere,Ripple)
+// KERNEL_MORPH_FUNCTION(Sphere,Sphere)
+KERNEL_MORPH_FUNCTION(Sphere,Torus)
+
+KERNEL_MORPH_FUNCTION(Torus,Wave)
+KERNEL_MORPH_FUNCTION(Torus,MultiWave)
+KERNEL_MORPH_FUNCTION(Torus,Ripple)
+KERNEL_MORPH_FUNCTION(Torus,Sphere)
+// KERNEL_MORPH_FUNCTION(Torus,Torus)
