@@ -17,11 +17,13 @@ namespace Basics_6
 
         private const int MaxDepth = 8;
 
-        [SerializeField, Range(1, MaxDepth)] private int depth = 4;
+        [SerializeField, Range(2, MaxDepth)] private int depth = 4;
 
         [SerializeField] private Mesh mesh;
 
         [SerializeField] private Material material;
+
+        [SerializeField] private Gradient gradient;
         
         private static readonly float3[] Directions = {
             up(), right(), left(), forward(), back()
@@ -33,7 +35,9 @@ namespace Basics_6
             quaternion.RotateX(0.5f * PI), quaternion.RotateX(-0.5f * PI)
         };
 
-        private readonly int MatricsId = Shader.PropertyToID("_Matrices");
+        private readonly int MatricsId = Shader.PropertyToID("_Matrices"), 
+            // Fractal的颜色
+            BaseColorId = Shader.PropertyToID("_BaseColor");
 
         private static MaterialPropertyBlock PropertyBlock;
         
@@ -183,6 +187,7 @@ namespace Basics_6
                 ComputeBuffer buffer = MatricsBuffers[i];
                 buffer.SetData(Matrics[i]);
                 PropertyBlock.SetBuffer(MatricsId,buffer);
+                PropertyBlock.SetColor(BaseColorId,gradient.Evaluate(i/(MatricsBuffers.Length-1.0f)));
                 Graphics.DrawMeshInstancedProcedural(mesh,0,material,bounds,buffer.count,PropertyBlock);
             }
         }
