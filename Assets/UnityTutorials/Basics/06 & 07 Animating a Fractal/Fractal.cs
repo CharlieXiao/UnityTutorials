@@ -7,6 +7,7 @@ using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 using quaternion = Unity.Mathematics.quaternion;
 
@@ -35,9 +36,11 @@ namespace Basics_6
             quaternion.RotateX(0.5f * PI), quaternion.RotateX(-0.5f * PI)
         };
 
-        private readonly int MatricsId = Shader.PropertyToID("_Matrices"), 
+        private readonly int MatricsId = Shader.PropertyToID("_Matrices"),
             // Fractal的颜色
-            BaseColorId = Shader.PropertyToID("_BaseColor");
+            BaseColorId = Shader.PropertyToID("_BaseColor"),
+            // 随机数
+            SequenceNumbersId = Shader.PropertyToID("_SequenceNumbers");
 
         private static MaterialPropertyBlock PropertyBlock;
         
@@ -54,6 +57,8 @@ namespace Basics_6
         
         // 传输数据到shader
         private ComputeBuffer[] MatricsBuffers;
+
+        private Vector4[] SequenceNumbers;
         
         [BurstCompile(FloatPrecision.Standard, FloatMode.Fast, CompileSynchronously = true)]
         struct UpdateFractalLevelJob : IJobFor
@@ -102,6 +107,8 @@ namespace Basics_6
             Parts = new NativeArray<FractalPart>[depth];
             Matrics = new NativeArray<float3x4>[depth];
             MatricsBuffers = new ComputeBuffer[depth];
+            SequenceNumbers = new Vector4[depth];
+            
             const int stride = 12 * 4;
             for (int i = 0, length = 1; i < Parts.Length; ++i, length *= 5)
             {
@@ -110,6 +117,7 @@ namespace Basics_6
                 Parts[i] = new NativeArray<FractalPart>(length,Allocator.Persistent);
                 Matrics[i] = new NativeArray<float3x4>(length,Allocator.Persistent);
                 MatricsBuffers[i] = new ComputeBuffer(length, stride);
+                SequenceNumbers[i] = new Vector4(Random.value, Random.value);
             }
             // initialize
             Parts[0][0] = CreatePart(0);
@@ -138,6 +146,7 @@ namespace Basics_6
             Parts = null;
             Matrics = null;
             MatricsBuffers = null;
+            SequenceNumbers = null;
         }
 
         private void OnValidate()
@@ -188,6 +197,7 @@ namespace Basics_6
                 buffer.SetData(Matrics[i]);
                 PropertyBlock.SetBuffer(MatricsId,buffer);
                 PropertyBlock.SetColor(BaseColorId,gradient.Evaluate(i/(MatricsBuffers.Length-1.0f)));
+                PropertyBlock.SetVector(SequenceNumbersId,SequenceNumbers[i]);
                 Graphics.DrawMeshInstancedProcedural(mesh,0,material,bounds,buffer.count,PropertyBlock);
             }
         }
