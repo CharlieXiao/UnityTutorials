@@ -1,9 +1,8 @@
 ﻿using Unity.Mathematics;
-
-namespace UnityTutorials.Pseudorandom_Noise._01_Hashing
+namespace UnityTutorials.Pseudorandom_Noise
 {
     [System.Serializable]
-    public struct SpaceTRS
+    public struct DomainTransform
     {
         // 由于我们的hash是在zox平面上进行的，只能进行一些操作
         // translate x，z
