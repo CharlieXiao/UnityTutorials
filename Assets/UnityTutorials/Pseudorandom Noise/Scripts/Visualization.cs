@@ -26,6 +26,8 @@ namespace UnityTutorials.Pseudorandom_Noise
 
         [SerializeField] private Shape shape = Shape.Plane;
 
+        [SerializeField, Range(0.0f,1.0f)] private float speed = 0.0f;
+        
         private float invResolution;
 
         private NativeArray<float3x4> positions, normals;
@@ -113,7 +115,8 @@ namespace UnityTutorials.Pseudorandom_Noise
 
         private void Update()
         {
-            float displacement = sin(2.0f * PI * Time.time) * displacementScale;
+            // using cos so that we can stop animating, but still got displacement
+            float displacement = cos(2.0f * PI * Time.time * speed) * displacementScale;
             
             if (updatePosition || transform.hasChanged)
             {
