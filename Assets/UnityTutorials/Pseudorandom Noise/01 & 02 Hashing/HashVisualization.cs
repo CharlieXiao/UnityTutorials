@@ -39,7 +39,8 @@ namespace UnityTutorials.Pseudorandom_Noise._01_Hashing
         private static int 
             hashedId = Shader.PropertyToID("_Hashes"),
             configId = Shader.PropertyToID("_Config"),
-            positionId = Shader.PropertyToID("_Positions");
+            positionId = Shader.PropertyToID("_Positions"),
+            normalId = Shader.PropertyToID("_Normals");
 
         [SerializeField] private Mesh instanceMesh;
 
@@ -48,8 +49,11 @@ namespace UnityTutorials.Pseudorandom_Noise._01_Hashing
         [SerializeField] private int seed = 0;
 
         [SerializeField, Range(1, 512)] private int resolution;
-
-        [SerializeField, Range(-2.0f, 2.0f)] private float verticalOffset = 1.0f;
+        
+        // move the cube along normal
+        [SerializeField, Range(-2.0f, 2.0f)] private float displacement = 0.1f;
+        
+        [SerializeField, Range(0.1f, 10f)] private float instanceScale = 1.0f;
 
         private float invResolution;
 
@@ -57,55 +61,48 @@ namespace UnityTutorials.Pseudorandom_Noise._01_Hashing
 
         private NativeArray<float3> positions;
 
+        private NativeArray<float3> normals;
+
         // transfer data to shader
-        private ComputeBuffer hashesBuffer,positionsBuffer;
+        private ComputeBuffer hashesBuffer,positionsBuffer,normalsBuffer;
 
         // material property
         private MaterialPropertyBlock propertyBlock;
 
+        private bool updatePosition = false;
+
+        private Bounds bounds;
+
         private void OnEnable()
         {
             int length = resolution * resolution;
+            
             hashes = new NativeArray<uint>(length, Allocator.Persistent);
             positions = new NativeArray<float3>(length, Allocator.Persistent);
-            // uint is 4 bytes long, so the stride is 4
+            normals = new NativeArray<float3>(length, Allocator.Persistent);
+
             hashesBuffer = new ComputeBuffer(length, 4);
-            // float3 is 3 * 4 bytes long
             positionsBuffer = new ComputeBuffer(length, 3 * 4);
+            normalsBuffer = new ComputeBuffer(length, 3 * 4);
+            
             invResolution = 1.0f / resolution;
+            updatePosition = true;
 
-            JobHandle handle = Shapes.Job.ScheduleParallel(positions, resolution, default);
-
-            // 执行Burst任务（并行）
-            new HashJob
-            {
-                hashes = hashes,
-                positions = positions,
-                hash = SmallXXHash.Seed(seed),
-                domainTRS = domain.Matrix
-            }.ScheduleParallel(hashes.Length, resolution, handle).Complete();
-            
-            // copy data to buffer
-            hashesBuffer.SetData(hashes);
-            positionsBuffer.SetData(positions);
-            
             // set property for rendering
             propertyBlock ??= new MaterialPropertyBlock();
-            propertyBlock.SetBuffer(hashedId, hashesBuffer);
-            propertyBlock.SetBuffer(positionId,positionsBuffer);
-            // config 存储了resolution和resolution的倒数，在shader中使用
-            propertyBlock.SetVector(configId, new Vector4(
-                resolution, invResolution,verticalOffset * invResolution));
-
         }
 
         private void OnDisable()
         {
             hashes.Dispose();
             positions.Dispose();
+            normals.Dispose();
             hashesBuffer.Release();
             positionsBuffer.Release();
+            normalsBuffer.Release();
             hashesBuffer = null;
+            positionsBuffer = null;
+            normalsBuffer = null;
         }
 
         private void OnValidate()
@@ -119,11 +116,43 @@ namespace UnityTutorials.Pseudorandom_Noise._01_Hashing
 
         private void Update()
         {
+            if (updatePosition || transform.hasChanged)
+            {
+                updatePosition = false;
+                transform.hasChanged = false;
+                // update position
+                JobHandle handle = Shapes.Job.ScheduleParallel(positions,normals, resolution,transform.localToWorldMatrix, default);
+
+                new Bounds(
+                    transform.position,
+                    float3(2.0f * cmax(abs(transform.lossyScale)) + displacement)
+                );
+                
+                // 执行Burst任务（并行）
+                new HashJob
+                {
+                    hashes = hashes,
+                    positions = positions,
+                    hash = SmallXXHash.Seed(seed),
+                    domainTRS = domain.Matrix
+                }.ScheduleParallel(hashes.Length, resolution, handle).Complete();
+            
+                // copy data to buffer
+                hashesBuffer.SetData(hashes);
+                positionsBuffer.SetData(positions);
+                normalsBuffer.SetData(normals);
+                
+                propertyBlock.SetBuffer(hashedId, hashesBuffer);
+                propertyBlock.SetBuffer(positionId,positionsBuffer);
+                propertyBlock.SetBuffer(normalId,normalsBuffer);
+                // config 存储了resolution和resolution的倒数，在shader中使用
+                propertyBlock.SetVector(configId, new Vector4(
+                    resolution, instanceScale * invResolution,displacement * invResolution));
+            }
             // 直接绘制即可
             Graphics.DrawMeshInstancedProcedural(
                 instanceMesh, 0, material, 
-                new Bounds(Vector3.zero, Vector3.one),
-                hashes.Length, propertyBlock);
+                bounds, hashes.Length, propertyBlock);
         }
     }
 }
