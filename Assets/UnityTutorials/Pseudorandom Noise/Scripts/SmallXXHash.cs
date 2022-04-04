@@ -77,6 +77,8 @@ namespace UnityTutorials.Pseudorandom_Noise
         
         // SmallXXHash -> SmallXXHash4
         public static implicit operator SmallXXHash4(SmallXXHash hash) => new SmallXXHash4((uint)hash);
+
+        public static SmallXXHash4 operator +(SmallXXHash4 hash, int v) => hash.accumulator + (uint)v;
         
         // 滚动哈希，将左移的数据放到数据的最后
         // 11001100 << 3 | 11001100 >> 5

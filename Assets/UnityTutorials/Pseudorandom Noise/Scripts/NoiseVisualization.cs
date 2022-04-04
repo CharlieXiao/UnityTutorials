@@ -1,4 +1,5 @@
-﻿using Unity.Collections;
+﻿using System;
+using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
@@ -17,33 +18,13 @@ namespace UnityTutorials.Pseudorandom_Noise
             scale = 8.0f
         };
 
-        [SerializeField, Range(1, 3)] private int dimensions = 3;
-
-        private enum NoiseType
-        {
-            Perlin,
-            Value
-        }
-
-        [SerializeField] private NoiseType noiseType = NoiseType.Value;
+        [SerializeField] private Noise.NoiseResolver noiseResolver = NoiseResolver.Default;
+        
+        [SerializeField] private Noise.Settings noiseSettings = Settings.Default;
 
         private NativeArray<float4> noise;
 
         private ComputeBuffer noiseBuffer;
-
-        private static Noise.ScheduleDelegate[] noiseJobs =
-        {
-            
-                Job<Lattice1D<Perlin>>.ScheduleParallel,
-                Job<Lattice2D<Perlin>>.ScheduleParallel,
-                Job<Lattice3D<Perlin>>.ScheduleParallel
-            ,
-            
-                Job<Lattice1D<Value>>.ScheduleParallel,
-                Job<Lattice2D<Value>>.ScheduleParallel,
-                Job<Lattice3D<Value>>.ScheduleParallel
-            
-        };
 
         protected override void EnableVisualization(int dataLength, MaterialPropertyBlock propertyBlock)
         {
@@ -61,7 +42,8 @@ namespace UnityTutorials.Pseudorandom_Noise
 
         protected override void UpdateVisualization(NativeArray<float3x4> positions, int resolution, JobHandle handle)
         {
-            noiseJobs[3*(int)noiseType+dimensions-1](positions, noise, seed, domain, resolution, handle).Complete();
+            var noiseJob = noiseResolver.Resolve();
+            noiseJob(positions, noise, noiseSettings, domain, resolution, handle).Complete();
             noiseBuffer.SetData(noise.Reinterpret<float>(4 * 4));
         }
     }

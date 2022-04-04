@@ -14,6 +14,9 @@ namespace UnityTutorials.Pseudorandom_Noise
             
             float4 Evaluate(SmallXXHash4 hash, float4 x, float4 y,float4 z);
 
+            // turbulence effect
+            float4 EvaluateAfterInterpolation(float4 value);
+
         }
         
         // the gradient is constant at lattice point
@@ -23,6 +26,7 @@ namespace UnityTutorials.Pseudorandom_Noise
             public float4 Evaluate(SmallXXHash4 hash, float4 x,float4 y) => hash.Floats01A* 2.0f - 1.0f;
             public float4 Evaluate(SmallXXHash4 hash, float4 x,float4 y,float4 z) => hash.Floats01A* 2.0f - 1.0f;
 
+            public float4 EvaluateAfterInterpolation(float4 value) => value;
         }
 
         public struct Perlin : IGradient
@@ -43,7 +47,8 @@ namespace UnityTutorials.Pseudorandom_Noise
                 // x,y from uniform distribution?
                 float4 gy = 0.5f - abs(gx);
                 gx -= floor(gx + 0.5f);
-                return (gx * x + gy * y) * 2.0f / 0.53528f;
+                // scalar div scalar, avoid vector division
+                return (gx * x + gy * y) * (2.0f / 0.53528f);
             }
 
             public float4 Evaluate(SmallXXHash4 hash, float4 x, float4 y, float4 z)
@@ -55,9 +60,31 @@ namespace UnityTutorials.Pseudorandom_Noise
                 gy += select(-offset, offset, gy < 0f);
                 // the gradient can have any direction,
                 // but the total function is still continuous
-                return (gx * x + gy * y + gz * z) / 0.5629f;
+                return (gx * x + gy * y + gz * z) * (1.0f / 0.56290f);
 
             }
+            
+            public float4 EvaluateAfterInterpolation(float4 value)
+            {
+                return value;
+            }
+        }
+
+        public struct Turbulence<G> : IGradient where G : struct, IGradient
+        {
+            // when evaluating, just forward this to G
+            public float4 Evaluate (SmallXXHash4 hash, float4 x) =>
+                default(G).Evaluate(hash, x);
+
+            public float4 Evaluate (SmallXXHash4 hash, float4 x, float4 y) =>
+                default(G).Evaluate(hash, x, y);
+            
+            public float4 Evaluate (SmallXXHash4 hash, float4 x, float4 y, float4 z) =>
+                default(G).Evaluate(hash, x, y, z);
+
+            // add turbulence effect here
+            public float4 EvaluateAfterInterpolation (float4 value) =>
+                abs(default(G).EvaluateAfterInterpolation(value));
         }
     }
 }

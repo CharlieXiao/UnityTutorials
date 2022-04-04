@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.18028305, g: 0.22571313, b: 0.3069213, a: 1}
+  m_IndirectSpecularColor: {r: 0.18028378, g: 0.22571412, b: 0.30692285, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -387,10 +387,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   instanceMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
   material: {fileID: 2100000, guid: b54256630ff5f2945a1d3b6a7abeadcd, type: 2}
-  resolution: 128
-  displacementScale: 0
+  resolution: 256
+  displacementScale: 0.2
   instanceScale: 1
-  shape: 3
+  shape: 0
   speed: 0
   seed: 0
   domain:
@@ -403,11 +403,21 @@ MonoBehaviour:
       y: 0
       z: 0
     scale:
-      x: 16
-      y: 16
-      z: 16
-  dimensions: 3
-  noiseType: 0
+      x: 1
+      y: 1
+      z: 1
+  noiseResolver:
+    dimension: 2
+    turbulence: 0
+    noiseType: 0
+    continuousType: 2
+    latticeType: 0
+  noiseSettings:
+    seed: 0
+    frequency: 4
+    octaves: 1
+    lacunarity: 2
+    persistence: 0
 --- !u!4 &774165525
 Transform:
   m_ObjectHideFlags: 0

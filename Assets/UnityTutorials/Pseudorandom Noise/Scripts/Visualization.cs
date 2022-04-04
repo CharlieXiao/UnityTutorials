@@ -20,7 +20,7 @@ namespace UnityTutorials.Pseudorandom_Noise
         [SerializeField, Range(1, 512)] private int resolution;
 
         // move the cube along normal
-        [SerializeField, Range(0.0f, 0.5f)] private float displacementScale = 0.1f;
+        [SerializeField, Range(-0.5f, 0.5f)] private float displacementScale = 0.1f;
 
         [SerializeField, Range(0.1f, 10f)] private float instanceScale = 1.0f;
 
@@ -122,11 +122,12 @@ namespace UnityTutorials.Pseudorandom_Noise
             {
                 updatePosition = false;
                 transform.hasChanged = false;
-
-                UpdateVisualization(positions, resolution,
-                    shapeJobs[(int)shape](
-                        positions, normals, resolution,
-                        transform.localToWorldMatrix, default));
+                // 感觉此处不应该提供positions？直接使用一个固定的坐标不就行了吗？
+                var shapeJobHandle = shapeJobs[(int)shape](
+                    positions, normals, resolution,
+                    transform.localToWorldMatrix, default);
+                
+                UpdateVisualization(positions, resolution,shapeJobHandle);
 
                 bounds = new Bounds(
                     transform.position,
