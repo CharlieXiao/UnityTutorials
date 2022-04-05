@@ -22,6 +22,8 @@ namespace UnityTutorials.Pseudorandom_Noise
         public interface ILattice
         {
             public LatticeSpan4 GetLatticeSpan4(float4 coordinates, int frequency);
+
+            public int4 ValidateSingleStep(int4 points, int frequency);
         }
         
         public struct C0Step : IStepFunction
@@ -59,6 +61,8 @@ namespace UnityTutorials.Pseudorandom_Noise
                 span.t = default(S).Step(0.0f,1.0f,span.t);
                 return span;
             }
+
+            public int4 ValidateSingleStep(int4 points, int frequency) => points;
         }
 
         public struct LatticeTiling<S> : ILattice where S : struct, IStepFunction
@@ -93,6 +97,12 @@ namespace UnityTutorials.Pseudorandom_Noise
                 span.t = coordinates - points;
                 span.t = default(S).Step(0.0f,1.0f,span.t);
                 return span;
+            }
+
+            public int4 ValidateSingleStep(int4 points, int frequency)
+            {
+                // make it rotating or warp
+                return select(select(points, 0, points == frequency), frequency - 1, points == -1);
             }
         }
 

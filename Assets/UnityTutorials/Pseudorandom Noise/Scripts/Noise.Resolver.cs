@@ -6,6 +6,7 @@ namespace UnityTutorials.Pseudorandom_Noise
 {
     public static partial class Noise
     {
+        // TODO: need refactoring this class, make three type(Gradient,Voronoi,Simplex) has their own resolve class
         [Serializable]
         public class NoiseResolver
         {
@@ -23,15 +24,30 @@ namespace UnityTutorials.Pseudorandom_Noise
             {
                 Normal,Tiling
             }
+
+            public enum VoronoiFunctionType
+            {
+                F1,F2,F2MinusF1
+            }
+
+            public enum VoronoiDistanceType
+            {
+                [InspectorName("Euclidean(Worley)")]
+                Worley,
+                Chebyshev,SquaredEuclidean
+            }
             
             [Range(1,3)]
             public int dimension;
             
             public bool turbulence;
             public NoiseType noiseType;
+            // 适用于基于梯度的noise
             // 插值后生成的曲线/曲面的性质，0阶连续，1阶连续和2阶连续，分别表示当前函数连续，导函数连续以及二阶导连续
             public ContinuousType continuousType;
             public LatticeType latticeType;
+            public VoronoiFunctionType voronoiFunctionType;
+            public VoronoiDistanceType voronoiDistanceType;
             
             private static Type[] _NoiseTypes =
             {
@@ -53,9 +69,19 @@ namespace UnityTutorials.Pseudorandom_Noise
                 typeof(Lattice1D<,>), typeof(Lattice2D<,>), typeof(Lattice3D<,>)
             };
 
+            private static Type[] _VoronoiFunctionTypes =
+            {
+                typeof(F1), typeof(F2), typeof(F2MinusF1)
+            };
+
+            private static Type[] _VoronoiDistanceTypes =
+            {
+                typeof(Worley),typeof(Chebyshev),typeof(SquaredEuclidean)
+            };
+
             private static Type[] _VoronoiDimTypes =
             {
-                typeof(Voronoi1D<>), typeof(Voronoi2D<>), typeof(Voronoi3D<>)
+                typeof(Voronoi1D<,,>), typeof(Voronoi2D<,,>), typeof(Voronoi3D<,,>)
             };
 
             public static NoiseResolver Default => new NoiseResolver
@@ -69,14 +95,15 @@ namespace UnityTutorials.Pseudorandom_Noise
 
             public ScheduleDelegate Resolve()
             {
-                Type S = _StepTypes[(int)continuousType];
-                Type L = _LatticeTypes[(int)latticeType].MakeGenericType(S);
                 Type JobType = null;
                 switch (noiseType)
                 {
                     case NoiseType.Value:
                     case NoiseType.Perlin:
                     {
+                        // gradient based noise
+                        Type S = _StepTypes[(int)continuousType];
+                        Type L = _LatticeTypes[(int)latticeType].MakeGenericType(S);
                         Type G = _NoiseTypes[(int)noiseType];
                         if (turbulence)
                         {
@@ -88,7 +115,12 @@ namespace UnityTutorials.Pseudorandom_Noise
                     }
                     case NoiseType.Voronoi:
                     {
-                        Type D = _VoronoiDimTypes[dimension - 1].MakeGenericType(L);
+                        // distance based noise
+                        // Voronoi并不基于gradient，因此其不需要steo
+                        Type L = _LatticeTypes[(int) latticeType].MakeGenericType(_StepTypes[(int) ContinuousType.C0]);
+                        Type F = _VoronoiFunctionTypes[(int) voronoiFunctionType];
+                        Type Dist = _VoronoiDistanceTypes[(int) voronoiDistanceType];
+                        Type D = _VoronoiDimTypes[dimension - 1].MakeGenericType(L,F,Dist);
                         JobType = typeof(Job<>).MakeGenericType(D);
                         break;
                     }
