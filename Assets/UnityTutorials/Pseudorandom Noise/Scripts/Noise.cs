@@ -35,7 +35,7 @@ namespace UnityTutorials.Pseudorandom_Noise
                 {
                     // 累加不同频率的noise，使得最终结果在大小上区分度更高
                     // 对于每一个octave可以使用不同的hash，这样最终随机效果更好
-                    sum += amplitude * default(N).GetNoise4(frequency * position, hash + i,frequency);
+                    sum += amplitude * default(N).GetNoise4(position, hash + i,frequency);
                     amplitudeSum += amplitude;
                     frequency *= settings.lacunarity;
                     amplitude *= settings.persistence;

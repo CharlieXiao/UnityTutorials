@@ -17,6 +17,13 @@ namespace UnityTutorials.Pseudorandom_Noise
         {
             scale = 8.0f
         };
+        
+        public enum NoiseType
+        {
+            Lattice,Voronoi,Simplex
+        }
+
+        [SerializeField] private NoiseType noiseType = NoiseType.Lattice;
 
         [SerializeField] private Noise.NoiseResolver noiseResolver = NoiseResolver.Default;
         
@@ -31,6 +38,8 @@ namespace UnityTutorials.Pseudorandom_Noise
             noise = new NativeArray<float4>(dataLength, Allocator.Persistent);
             noiseBuffer = new ComputeBuffer(dataLength * 4, 4);
             propertyBlock.SetBuffer(noiseId, noiseBuffer);
+            
+            noiseResolver.OnEnable(noiseType);
         }
 
         protected override void DisableVisualization()

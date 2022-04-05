@@ -89,6 +89,9 @@ namespace UnityTutorials.Pseudorandom_Noise
 
         public static SmallXXHash4 Seed(int4 seed) => (uint4)seed + primeE;
 
+        public static SmallXXHash4 Select(SmallXXHash4 a, SmallXXHash4 b, bool4 c) =>
+            math.select(a.accumulator, b.accumulator, c);
+        
         public uint4 BytesA => (uint4)this & 255;
 
         public uint4 BytesB => ((uint4)this >> 8) & 255;

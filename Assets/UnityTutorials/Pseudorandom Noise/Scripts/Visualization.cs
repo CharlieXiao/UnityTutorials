@@ -17,7 +17,7 @@ namespace UnityTutorials.Pseudorandom_Noise
 
         [SerializeField] private Material material;
 
-        [SerializeField, Range(1, 512)] private int resolution;
+        [SerializeField, Range(2, 512)] private int resolution;
 
         // move the cube along normal
         [SerializeField, Range(-0.5f, 0.5f)] private float displacementScale = 0.1f;

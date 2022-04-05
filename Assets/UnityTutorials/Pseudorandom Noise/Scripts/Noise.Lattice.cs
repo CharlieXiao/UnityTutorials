@@ -49,7 +49,7 @@ namespace UnityTutorials.Pseudorandom_Noise
         {
             public LatticeSpan4 GetLatticeSpan4(float4 coordinates, int frequency)
             {
-                // coordinates *= frequency;
+                coordinates *= frequency;
                 float4 points = floor(coordinates);
                 LatticeSpan4 span;
                 span.p0 = (int4)points;
@@ -114,7 +114,7 @@ namespace UnityTutorials.Pseudorandom_Noise
                 var l = default(L);
                 LatticeSpan4 x = l.GetLatticeSpan4(positions.c0,frequency);
                 var g = default(G);
-                return g.EvaluateAfterInterpolation(lerp(g.Evaluate(hash.Eat(x.p0),x.g0), g.Evaluate(hash.Eat(x.p1),x.g1), x.t));
+                return g.EvaluateCombined(lerp(g.Evaluate(hash.Eat(x.p0),x.g0), g.Evaluate(hash.Eat(x.p1),x.g1), x.t));
             }
         }
 
@@ -127,7 +127,7 @@ namespace UnityTutorials.Pseudorandom_Noise
                 // bilinear interpolate
                 SmallXXHash4 h0 = hash.Eat(x.p0),h1 = hash.Eat(x.p1);
                 var g = default(G);
-                return g.EvaluateAfterInterpolation(lerp(
+                return g.EvaluateCombined(lerp(
                     lerp(
                         g.Evaluate(h0.Eat(z.p0), x.g0, z.g0),
                         g.Evaluate(h0.Eat(z.p1), x.g0, z.g1),
@@ -162,7 +162,7 @@ namespace UnityTutorials.Pseudorandom_Noise
                 
                 // bicubic interpolation
                 var g = default(G);
-                return g.EvaluateAfterInterpolation(
+                return g.EvaluateCombined(
                     lerp(
                     lerp(
                         lerp(

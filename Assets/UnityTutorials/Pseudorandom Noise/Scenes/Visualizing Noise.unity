@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.18028305, g: 0.22571313, b: 0.3069213, a: 1}
+  m_IndirectSpecularColor: {r: 0.18028378, g: 0.22571412, b: 0.30692285, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -403,17 +403,24 @@ MonoBehaviour:
       y: 0
       z: 0
     scale:
-      x: 4
-      y: 4
-      z: 4
+      x: 1
+      y: 1
+      z: 1
+  noiseType: 2
   noiseResolver:
+    simplexResolver:
+      gradientFunctionType: 1
+      turbulence: 0
+    latticeResolver:
+      continuousType: 2
+      latticeType: 0
+      gradientType: 0
+      turbulence: 0
+    voronoiResolver:
+      latticeType: 0
+      functionType: 0
+      distanceType: 0
     dimension: 2
-    turbulence: 0
-    noiseType: 2
-    continuousType: 2
-    latticeType: 0
-    voronoiFunctionType: 0
-    voronoiDistanceType: 0
   noiseSettings:
     seed: 0
     frequency: 2
