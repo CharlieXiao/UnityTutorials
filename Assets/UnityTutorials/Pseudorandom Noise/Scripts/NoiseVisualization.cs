@@ -2,8 +2,11 @@
 using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
+using UnityEditor;
 using UnityEngine;
 using static UnityTutorials.Pseudorandom_Noise.Noise;
+using static UnityTutorials.Pseudorandom_Noise.Noise.NoiseResolver;
+
 
 namespace UnityTutorials.Pseudorandom_Noise
 {
@@ -11,35 +14,19 @@ namespace UnityTutorials.Pseudorandom_Noise
     {
         private static int noiseId = Shader.PropertyToID("_Noise");
 
-        [SerializeField] private int seed;
-
-        [SerializeField] private DomainTransform domain = new DomainTransform
-        {
-            scale = 8.0f
-        };
-        
-        public enum NoiseType
-        {
-            Lattice,Voronoi,Simplex
-        }
-
-        [SerializeField] private NoiseType noiseType = NoiseType.Lattice;
-
-        [SerializeField] private Noise.NoiseResolver noiseResolver = NoiseResolver.Default;
-        
-        [SerializeField] private Noise.Settings noiseSettings = Settings.Default;
+        [SerializeField] private DomainTransform domain = DomainTransform.Default;
+        [SerializeField] private Settings noiseSettings = Settings.Default;
+        [SerializeField] private NoiseResolver noiseResolver = new NoiseResolver();
 
         private NativeArray<float4> noise;
-
         private ComputeBuffer noiseBuffer;
+
 
         protected override void EnableVisualization(int dataLength, MaterialPropertyBlock propertyBlock)
         {
             noise = new NativeArray<float4>(dataLength, Allocator.Persistent);
             noiseBuffer = new ComputeBuffer(dataLength * 4, 4);
             propertyBlock.SetBuffer(noiseId, noiseBuffer);
-            
-            noiseResolver.OnEnable(noiseType);
         }
 
         protected override void DisableVisualization()
@@ -54,6 +41,56 @@ namespace UnityTutorials.Pseudorandom_Noise
             var noiseJob = noiseResolver.Resolve();
             noiseJob(positions, noise, noiseSettings, domain, resolution, handle).Complete();
             noiseBuffer.SetData(noise.Reinterpret<float>(4 * 4));
+        }
+
+        [CustomEditor(typeof(NoiseVisualization))]
+        [CanEditMultipleObjects]
+        public class NoiseEditor : Editor
+        {
+            private SerializedProperty m_NoiseProp;
+
+            public void OnEnable()
+            {
+                m_NoiseProp = serializedObject.FindProperty("noiseResolver");
+            }
+
+            public override void OnInspectorGUI()
+            {
+                // base.OnInspectorGUI();
+                EditorGUI.BeginChangeCheck();
+                serializedObject.UpdateIfRequiredOrScript();
+                NoiseGenre noiseGenre = (NoiseGenre)Enum.ToObject(typeof(NoiseGenre),
+                    m_NoiseProp.FindPropertyRelative("noiseGenre").enumValueIndex);
+                switch (noiseGenre)
+                {
+                    case NoiseGenre.Simplex:
+                        DrawPropertiesExcluding(serializedObject,
+                            "noiseResolver.voronoiFunctionType",
+                            "noiseResolver.voronoiDistanceType",
+                            "noiseResolver.gradientFunctionType",
+                            "noiseResolver.continuousType",
+                            "noiseResolver.latticeType");
+                        break;
+                    case NoiseGenre.Gradient:
+                        DrawPropertiesExcluding(serializedObject,
+                            "noiseResolver.voronoiFunctionType",
+                            "noiseResolver.voronoiDistanceType",
+                            "noiseResolver.gradientFunctionType",
+                            "noiseResolver.continuousType",
+                            "noiseResolver.latticeType");
+                        break;
+                    case NoiseGenre.Voronoi:
+                        DrawPropertiesExcluding(serializedObject,
+                            "noiseResolver.voronoiFunctionType",
+                            "noiseResolver.voronoiDistanceType",
+                            "noiseResolver.gradientFunctionType",
+                            "noiseResolver.continuousType",
+                            "noiseResolver.latticeType");
+                        break;
+                }
+                serializedObject.ApplyModifiedProperties();
+                EditorGUI.EndChangeCheck();
+            }
         }
     }
 }

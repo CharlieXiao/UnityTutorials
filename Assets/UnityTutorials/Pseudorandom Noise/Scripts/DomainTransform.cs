@@ -17,5 +17,10 @@ namespace UnityTutorials.Pseudorandom_Noise
                 return math.float3x4(m.c0.xyz, m.c1.xyz, m.c2.xyz, m.c3.xyz);
             }
         }
+
+        public static DomainTransform Default => new DomainTransform
+        {
+            scale = 8.0f
+        };
     }
 }

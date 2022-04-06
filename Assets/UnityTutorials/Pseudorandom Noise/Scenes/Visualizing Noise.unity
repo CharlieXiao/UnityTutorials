@@ -392,7 +392,6 @@ MonoBehaviour:
   instanceScale: 1
   shape: 0
   speed: 0
-  seed: 0
   domain:
     translation:
       x: 0
@@ -406,27 +405,22 @@ MonoBehaviour:
       x: 1
       y: 1
       z: 1
-  noiseType: 2
-  noiseResolver:
-    simplexResolver:
-      gradientFunctionType: 1
-      turbulence: 0
-    latticeResolver:
-      continuousType: 2
-      latticeType: 0
-      gradientType: 0
-      turbulence: 0
-    voronoiResolver:
-      latticeType: 0
-      functionType: 0
-      distanceType: 0
-    dimension: 2
   noiseSettings:
     seed: 0
     frequency: 2
     octaves: 1
     lacunarity: 2
     persistence: 0
+  noiseResolver:
+    noiseGenre: 2
+    dimension: 1
+    voronoiFunctionType: 0
+    voronoiDistanceType: 0
+    gradientFunctionType: 1
+    simplexFunctionType: 1
+    continuousType: 2
+    latticeType: 0
+    turbulence: 0
 --- !u!4 &774165525
 Transform:
   m_ObjectHideFlags: 0

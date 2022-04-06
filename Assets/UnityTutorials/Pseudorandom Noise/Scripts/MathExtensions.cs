@@ -17,10 +17,20 @@ namespace UnityTutorials.Pseudorandom_Noise
         
         // return the first three row of matrix
         // expect last row to be (0,0,0,1) in all the case
-        public static float3x4 Get3x4(this float4x4 m) => float3x4(m.c0.xyz, m.c1.xyz, m.c2.xyz, m.c3.xyz);
+        public static float3x4 GetCompactMatrix(this float4x4 m) => float3x4(m.c0.xyz, m.c1.xyz, m.c2.xyz, m.c3.xyz);
+
+        public static float4x2 NormalizeVectors(this float4x2 v)
+        {
+            float4 invLength = rsqrt(v.c0 * v.c0 + v.c1 * v.c1);
+            return float4x2(v.c0 * invLength, v.c1 * invLength);
+        }
+        
+        public static float4x3 NormalizeVectors(this float4x3 v)
+        {
+            float4 invLength = rsqrt(v.c0 * v.c0 + v.c1 * v.c1 + v.c2 * v.c2);
+            return float4x3(v.c0 * invLength, v.c1 * invLength,v.c2 * invLength);
+        }
 
         public static float SQRT3 = 1.7320508075688772935274463415059f;
-
-        public static float SQRT6 = 2.4494897427831780981972840747059f;
     }
 }

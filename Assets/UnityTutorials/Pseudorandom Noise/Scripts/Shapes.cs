@@ -43,8 +43,8 @@ namespace UnityTutorials.Pseudorandom_Noise
                     normals = normals,
                     resolution = resolution,
                     invResolution = 1.0f / resolution,
-                    positionTRS = trs.Get3x4(),
-                    normalTRS = transpose(inverse(trs)).Get3x4()
+                    positionTRS = trs.GetCompactMatrix(),
+                    normalTRS = transpose(inverse(trs)).GetCompactMatrix()
                 }.ScheduleParallel(positions.Length, resolution, dependency);
             }
         }

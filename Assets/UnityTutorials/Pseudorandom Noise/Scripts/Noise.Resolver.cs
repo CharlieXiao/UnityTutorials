@@ -1,5 +1,9 @@
 ﻿using System;
+using UnityEditor;
+using UnityEditor.UIElements;
 using UnityEngine;
+using UnityEngine.UIElements;
+using Object = System.Object;
 
 namespace UnityTutorials.Pseudorandom_Noise
 {
@@ -28,72 +32,19 @@ namespace UnityTutorials.Pseudorandom_Noise
                }
              }
          */
-        // [Serializable]
-
-        private static Type[] _StepTypes =
-        {
-            typeof(C0Step), typeof(C1Step), typeof(C2Step)
-        };
-
-        private static Type[] _LatticeTypes =
-        {
-            typeof(LatticeNormal<>), typeof(LatticeTiling<>)
-        };
-        
-
-        // [Range(1,3)]
-        // public int dimension;
-
         [Serializable]
-        public struct NoiseResolver
+        public class NoiseResolver
         {
-            public SimplexResolver simplexResolver;
-            
-            public LatticeResolver latticeResolver;
-            
-            public VoronoiResolver voronoiResolver;
-
-            private InternalResolver noiseConfig;
-
-            
-            [Range(1,3)]
-            public int dimension;
-
-            public static NoiseResolver Default => new NoiseResolver
+            private static Type[] _StepTypes =
             {
-                dimension = 2
+                typeof(C0Step), typeof(C1Step), typeof(C2Step)
             };
 
-            public void OnEnable(NoiseVisualization.NoiseType noiseType)
+            private static Type[] _LatticeTypes =
             {
-                switch (noiseType)
-                {
-                    case NoiseVisualization.NoiseType.Simplex:
-                        noiseConfig = simplexResolver;
-                        break;
-                    case NoiseVisualization.NoiseType.Lattice:
-                        noiseConfig = latticeResolver;
-                        break;
-                    case NoiseVisualization.NoiseType.Voronoi:
-                        noiseConfig = voronoiResolver;
-                        break;
-                }
-            }
+                typeof(LatticeNormal<>), typeof(LatticeTiling<>)
+            };
 
-            public ScheduleDelegate Resolve()
-            {
-                return noiseConfig.Resolve(dimension);
-            }
-        }
-
-        public abstract class InternalResolver
-        { 
-            public abstract ScheduleDelegate Resolve(int dimension);
-        }
-
-        [Serializable]
-        public class VoronoiResolver : InternalResolver
-        {
             private static Type[] _VoronoiFunctionTypes =
             {
                 typeof(F1), typeof(F2), typeof(F2MinusF1)
@@ -101,7 +52,12 @@ namespace UnityTutorials.Pseudorandom_Noise
 
             private static Type[] _VoronoiDistanceTypes =
             {
-                typeof(Worley),typeof(Chebyshev),typeof(SquaredEuclidean)
+                typeof(Worley), typeof(Chebyshev), typeof(SquaredEuclidean)
+            };
+            
+            private static Type[] _SimplexDimTypes =
+            {
+                typeof(Simplex1D<>),typeof(Simplex2D<>),typeof(Simplex3D<>)
             };
 
             private static Type[] _VoronoiDimTypes =
@@ -109,50 +65,6 @@ namespace UnityTutorials.Pseudorandom_Noise
                 typeof(Voronoi1D<,,>), typeof(Voronoi2D<,,>), typeof(Voronoi3D<,,>)
             };
             
-            public enum FunctionType
-            {
-                [Tooltip("Min distance")]
-                F1,
-                [Tooltip("Second min distance")]
-                F2,
-                [Tooltip("Second min distance minus min distance")]
-                F2MinusF1
-            }
-
-            public enum DistanceType
-            {
-                [InspectorName("Euclidean(Worley)")]
-                Worley,
-                [Tooltip("D(x,y) = cmax(|x-y|)")]
-                Chebyshev,
-                SquaredEuclidean
-            }
-
-            public enum LatticeType
-            {
-                Normal,Tiling
-            }
-
-            public LatticeType latticeType = LatticeType.Normal;
-
-            public FunctionType functionType = FunctionType.F1;
-
-            public DistanceType distanceType = DistanceType.Worley;
-
-            public override ScheduleDelegate Resolve(int dimension)
-            {
-                Type L = _LatticeTypes[(int) latticeType].MakeGenericType(typeof(C0Step));
-                Type F = _VoronoiFunctionTypes[(int) functionType];
-                Type Dist = _VoronoiDistanceTypes[(int) distanceType];
-                Type Dim = _VoronoiDimTypes[dimension - 1].MakeGenericType(L,F,Dist);
-                Type JobType = typeof(Job<>).MakeGenericType(Dim);
-                return JobType.GetMethod("ScheduleParallel").CreateDelegate(typeof(ScheduleDelegate)) as ScheduleDelegate;
-            }
-        }
-
-        [Serializable]
-        public class LatticeResolver : InternalResolver
-        {
             private static Type[] _GradientDimTypes =
             {
                 typeof(Lattice1D<,>), typeof(Lattice2D<,>), typeof(Lattice3D<,>)
@@ -160,12 +72,36 @@ namespace UnityTutorials.Pseudorandom_Noise
 
             private static Type[] _GradientFunctionType =
             {
-                typeof(Perlin), typeof(Value), typeof(Simplex)
+                typeof(Perlin), typeof(Value)
             };
             
+            private static Type[] _SimplexFunctionTypes =
+            {
+                typeof(Value), typeof(Simplex), typeof(FastSimplex)
+            };
+
+            public enum NoiseGenre
+            {
+                Simplex,Gradient,Voronoi
+            }
+
+            public enum VoronoiFunctionType
+            {
+                [Tooltip("Min distance")] F1,
+                [Tooltip("Second min distance")] F2,
+                [Tooltip("Second min distance minus min distance")] F2MinusF1
+            }
+
+            public enum VoronoiDistanceType
+            {
+                [InspectorName("Euclidean(Worley)")] Worley,
+                [Tooltip("D(x,y) = cmax(|x-y|)")] Chebyshev,
+                SquaredEuclidean
+            }
+
             public enum GradientFunctionType
             {
-                Perlin,Value,Simplex
+                Perlin,Value
             }
             
             public enum ContinuousType
@@ -177,21 +113,44 @@ namespace UnityTutorials.Pseudorandom_Noise
             {
                 Normal,Tiling
             }
-            
-            public ContinuousType continuousType = ContinuousType.C2;
 
-            public LatticeType latticeType = LatticeType.Normal;
-
-            public GradientFunctionType gradientType = GradientFunctionType.Perlin;
-
-            public bool turbulence = false;
-            
-            public override ScheduleDelegate Resolve(int dimension)
+            public enum SimplexFunctionType
             {
-                // gradient based noise
+                Value,Simplex,FastSimplex
+            }
+
+            public ScheduleDelegate Resolve()
+            {
+                switch (noiseGenre)
+                {
+                    case NoiseGenre.Gradient:
+                        return ResolveGradient(dimension,
+                            continuousType, latticeType,
+                            gradientFunctionType, turbulence);
+                    case NoiseGenre.Simplex:
+                        return ResolveSimplex(dimension, simplexFunctionType, turbulence);
+                    case NoiseGenre.Voronoi:
+                        return ResolveVoronoi(dimension, latticeType, voronoiFunctionType, voronoiDistanceType);
+                }
+
+                throw new ArgumentOutOfRangeException("Unrecognized enumeration" + noiseGenre);
+            }
+
+            public static ScheduleDelegate ResolveVoronoi(int dimension,LatticeType latticeType,VoronoiFunctionType functionType,VoronoiDistanceType distanceType)
+            {
+                Type L = _LatticeTypes[(int) latticeType].MakeGenericType(typeof(C0Step));
+                Type F = _VoronoiFunctionTypes[(int) functionType];
+                Type Dist = _VoronoiDistanceTypes[(int) distanceType];
+                Type Dim = _VoronoiDimTypes[dimension - 1].MakeGenericType(L,F,Dist);
+                Type JobType = typeof(Job<>).MakeGenericType(Dim);
+                return JobType.GetMethod("ScheduleParallel").CreateDelegate(typeof(ScheduleDelegate)) as ScheduleDelegate;
+            }
+
+            public static ScheduleDelegate ResolveGradient(int dimension,ContinuousType continuousType,LatticeType latticeType,GradientFunctionType functionType,bool turbulence)
+            {
                 Type S = _StepTypes[(int)continuousType];
                 Type L = _LatticeTypes[(int)latticeType].MakeGenericType(S);
-                Type G = _GradientFunctionType[(int)gradientType];
+                Type G = _GradientFunctionType[(int)functionType];
                 if (turbulence)
                 {
                     G = typeof(Turbulence<>).MakeGenericType(G);
@@ -200,33 +159,10 @@ namespace UnityTutorials.Pseudorandom_Noise
                 Type JobType = typeof(Job<>).MakeGenericType(D);
                 return JobType.GetMethod("ScheduleParallel").CreateDelegate(typeof(ScheduleDelegate)) as ScheduleDelegate;
             }
-        }
 
-        [Serializable]
-        public class SimplexResolver : InternalResolver
-        {
-            private static Type[] _SimplexDimTypes =
+            public static ScheduleDelegate ResolveSimplex(int dimension,SimplexFunctionType functionType,bool turbulence)
             {
-                typeof(Simplex1D<>),typeof(Simplex2D<>),typeof(Simplex3D<>)
-            };
-
-            private static Type[] _SimplexGradientTypes =
-            {
-                typeof(Value), typeof(Simplex)
-            };
-
-            public enum GradientFunctionType
-            {
-                Value,Simplex
-            }
-
-            public GradientFunctionType gradientFunctionType = GradientFunctionType.Value;
-
-            public bool turbulence = false;
-
-            public override ScheduleDelegate Resolve(int dimension)
-            {
-                Type G = _SimplexGradientTypes[(int)gradientFunctionType];
+                Type G = _SimplexFunctionTypes[(int)functionType];
                 if (turbulence)
                 {
                     G = typeof(Turbulence<>).MakeGenericType(G);
@@ -235,6 +171,53 @@ namespace UnityTutorials.Pseudorandom_Noise
                 Type JobType = typeof(Job<>).MakeGenericType(D);
                 return JobType.GetMethod("ScheduleParallel").CreateDelegate(typeof(ScheduleDelegate)) as ScheduleDelegate;
             }
+            
+            [SerializeField] private NoiseGenre noiseGenre = NoiseGenre.Gradient;
+            [SerializeField] [Range(1, 3)] private int dimension = 1;
+            [SerializeField] private VoronoiFunctionType voronoiFunctionType = VoronoiFunctionType.F1;
+            [SerializeField] private VoronoiDistanceType voronoiDistanceType = VoronoiDistanceType.Worley;
+            [SerializeField] private GradientFunctionType gradientFunctionType = GradientFunctionType.Value;
+            [SerializeField] private SimplexFunctionType simplexFunctionType = SimplexFunctionType.Simplex;
+            [SerializeField] private ContinuousType continuousType = ContinuousType.C2;
+            [SerializeField] private LatticeType latticeType = LatticeType.Normal;
+            [SerializeField] private bool turbulence = false;
+            
+
+            // public class NoiseResolverDrawer
+            // {
+                // public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+                // {
+                    // Using BeginProperty / EndProperty on the parent property means that
+                    // prefab override logic works on the entire property.
+                    // EditorGUI.BeginProperty(position, label, property);
+                    
+                    
+                    // EditorGUI.PropertyField(position,property.FindPropertyRelative("noiseGenre"));
+                    // EditorGUI.PropertyField(position, property.FindPropertyRelative("dimension"));
+                    // EditorGUI.PropertyField(position, property.FindPropertyRelative("name"), GUIContent.none);
+
+                    // Set indent back to what it was
+                    // EditorGUI.indentLevel = indent;
+
+                    // EditorGUI.EndProperty();
+
+                    // EditorGUI.BeginProperty(position, label, property);
+                    // EditorGUI.LabelField(position,label);
+                    // // string name = 
+                    // // Object noiseGenre;
+                    // NoiseGenre noiseGenre = (NoiseGenre)Enum.ToObject(typeof(NoiseGenre),
+                    //     property.FindPropertyRelative("noiseGenre").enumValueIndex);
+                    // // Debug.Log(noiseGenre);
+                    //
+                    // switch (noiseGenre)
+                    // {
+                    //     case NoiseGenre.Simplex:
+                    //         break;
+                    // }
+                    //
+                    // EditorGUI.EndProperty();
+                // }
+            // }
         }
     }
 }
