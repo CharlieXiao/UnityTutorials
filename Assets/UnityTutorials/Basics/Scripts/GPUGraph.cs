@@ -1,10 +1,7 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using static Basics_5.FunctionLibrary;
+using static Basics.GPUFunctionLibrary;
 
-namespace Basics_5
+namespace Basics
 {
     public class GPUGraph : MonoBehaviour
     {
@@ -13,7 +10,7 @@ namespace Basics_5
         [SerializeField, Range(10, MaxResolution)]
         private int resolution = 10;
 
-        [SerializeField] private FunctionName function = FunctionName.Sphere;
+        [SerializeField] private GPUFunctionLibrary.FunctionName function = GPUFunctionLibrary.FunctionName.Sphere;
 
         private enum Transition
         {
@@ -47,7 +44,7 @@ namespace Basics_5
         // 是否处于转换状态（从一个函数转换到另外一个函数）
         private bool transitioning;
 
-        private FunctionName transitionFunction;
+        private GPUFunctionLibrary.FunctionName transitionFunction;
 
         private ComputeBuffer positionBuffer;
 
@@ -56,8 +53,6 @@ namespace Basics_5
         // for hot-reloading
         private void OnEnable()
         {
-            Debug.Log("enabled");
-            // Debug.Log("sizeof(Vector3) is "+3*sizeof(float));
             // 创建空间（一次拉满）
             positionBuffer = new ComputeBuffer(MaxResolution * MaxResolution, SizeOfVector3);
             // KernelId = computeShader.FindKernel("FunctionKernel");
@@ -66,8 +61,6 @@ namespace Basics_5
 
         private void OnDisable()
         {
-            // 释放GPU上的空间
-            Debug.Log("disabled");
             positionBuffer.Release();
             // explicitly mark it null 
             positionBuffer = null;
@@ -149,12 +142,6 @@ namespace Basics_5
             // finally, use shader to draw it
             // count指定为resolution * resolution，使其支持动态变更分辨率
             Graphics.DrawMeshInstancedProcedural(mesh, 0, material, bounds, resolution * resolution);
-        }
-
-        // Start is called before the first frame update
-        private void Start()
-        {
-            Debug.Log("GPUGraph start rendering...");
         }
 
         // Update is called once per frame

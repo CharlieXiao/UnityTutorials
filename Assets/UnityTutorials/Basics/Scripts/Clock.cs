@@ -1,9 +1,7 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-namespace Basics_1
+namespace Basics
 {
     public class Clock : MonoBehaviour
     {

@@ -1,9 +1,7 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using static UnityEngine.Mathf;
 
-namespace Basics_23
+namespace Basics
 {
     public static class FunctionLibrary
     {

@@ -20,7 +20,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: basics-02&3-M-PointSurface
+  m_Name: M-Point
   m_Shader: {fileID: -6465566751694194690, guid: 0d96c792d828b0b418bb1335569b2b0f, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 4

@@ -1,6 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using Unity.Mathematics;
 using static Unity.Mathematics.math;
 using Unity.Burst;
@@ -11,7 +8,7 @@ using Random = UnityEngine.Random;
 
 using quaternion = Unity.Mathematics.quaternion;
 
-namespace Basics_6
+namespace Basics
 {
     public class Fractal : MonoBehaviour
     {
