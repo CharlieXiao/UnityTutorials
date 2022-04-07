@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.18028378, g: 0.22571412, b: 0.30692285, a: 1}
+  m_IndirectSpecularColor: {r: 0.18028305, g: 0.22571313, b: 0.3069213, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -388,7 +388,7 @@ MonoBehaviour:
   instanceMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
   material: {fileID: 2100000, guid: b54256630ff5f2945a1d3b6a7abeadcd, type: 2}
   resolution: 256
-  displacementScale: 0
+  displacementScale: 0.1
   instanceScale: 1
   shape: 0
   speed: 0
@@ -413,8 +413,8 @@ MonoBehaviour:
     persistence: 0
   noiseResolver:
     noiseGenre: 2
-    dimension: 1
-    voronoiFunctionType: 0
+    dimension: 3
+    voronoiFunctionType: 2
     voronoiDistanceType: 0
     gradientFunctionType: 1
     simplexFunctionType: 1

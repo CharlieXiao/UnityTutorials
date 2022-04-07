@@ -1,37 +1,10 @@
 ﻿using System;
-using UnityEditor;
-using UnityEditor.UIElements;
 using UnityEngine;
-using UnityEngine.UIElements;
-using Object = System.Object;
 
 namespace UnityTutorials.Pseudorandom_Noise
 {
     public static partial class Noise
     {
-        // TODO: using custom editor to manage the noise config
-        /*
-         *   public class MyScript : MonoBehaviour
-             {
-               public bool flag;
-               public int i = 1;
-             }
-             
-             [CustomEditor(typeof(MyScript))]
-             public class MyScriptEditor : Editor
-             {
-               void OnInspectorGUI()
-               {
-                 var myScript = target as MyScript;
-             
-                 myScript.flag = GUILayout.Toggle(myScript.flag, "Flag");
-                 
-                 if(myScript.flag)
-                   myScript.i = EditorGUILayout.IntSlider("I field:", myScript.i , 1 , 100);
-             
-               }
-             }
-         */
         [Serializable]
         public class NoiseResolver
         {
@@ -77,7 +50,7 @@ namespace UnityTutorials.Pseudorandom_Noise
             
             private static Type[] _SimplexFunctionTypes =
             {
-                typeof(Value), typeof(Simplex), typeof(FastSimplex)
+                typeof(Value), typeof(Simplex)
             };
 
             public enum NoiseGenre
@@ -116,8 +89,18 @@ namespace UnityTutorials.Pseudorandom_Noise
 
             public enum SimplexFunctionType
             {
-                Value,Simplex,FastSimplex
+                Value,Simplex
             }
+            
+            [SerializeField] private NoiseGenre noiseGenre = NoiseGenre.Gradient;
+            [SerializeField,Range(1,3)] private int dimension = 1;
+            [SerializeField] private VoronoiFunctionType voronoiFunctionType = VoronoiFunctionType.F1;
+            [SerializeField] private VoronoiDistanceType voronoiDistanceType = VoronoiDistanceType.Worley;
+            [SerializeField] private GradientFunctionType gradientFunctionType = GradientFunctionType.Value;
+            [SerializeField] private SimplexFunctionType simplexFunctionType = SimplexFunctionType.Simplex;
+            [SerializeField] private ContinuousType continuousType = ContinuousType.C2;
+            [SerializeField] private LatticeType latticeType = LatticeType.Normal;
+            [SerializeField] private bool turbulence = false;
 
             public ScheduleDelegate Resolve()
             {
@@ -132,7 +115,7 @@ namespace UnityTutorials.Pseudorandom_Noise
                     case NoiseGenre.Voronoi:
                         return ResolveVoronoi(dimension, latticeType, voronoiFunctionType, voronoiDistanceType);
                 }
-
+            
                 throw new ArgumentOutOfRangeException("Unrecognized enumeration" + noiseGenre);
             }
 
@@ -171,53 +154,6 @@ namespace UnityTutorials.Pseudorandom_Noise
                 Type JobType = typeof(Job<>).MakeGenericType(D);
                 return JobType.GetMethod("ScheduleParallel").CreateDelegate(typeof(ScheduleDelegate)) as ScheduleDelegate;
             }
-            
-            [SerializeField] private NoiseGenre noiseGenre = NoiseGenre.Gradient;
-            [SerializeField] [Range(1, 3)] private int dimension = 1;
-            [SerializeField] private VoronoiFunctionType voronoiFunctionType = VoronoiFunctionType.F1;
-            [SerializeField] private VoronoiDistanceType voronoiDistanceType = VoronoiDistanceType.Worley;
-            [SerializeField] private GradientFunctionType gradientFunctionType = GradientFunctionType.Value;
-            [SerializeField] private SimplexFunctionType simplexFunctionType = SimplexFunctionType.Simplex;
-            [SerializeField] private ContinuousType continuousType = ContinuousType.C2;
-            [SerializeField] private LatticeType latticeType = LatticeType.Normal;
-            [SerializeField] private bool turbulence = false;
-            
-
-            // public class NoiseResolverDrawer
-            // {
-                // public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
-                // {
-                    // Using BeginProperty / EndProperty on the parent property means that
-                    // prefab override logic works on the entire property.
-                    // EditorGUI.BeginProperty(position, label, property);
-                    
-                    
-                    // EditorGUI.PropertyField(position,property.FindPropertyRelative("noiseGenre"));
-                    // EditorGUI.PropertyField(position, property.FindPropertyRelative("dimension"));
-                    // EditorGUI.PropertyField(position, property.FindPropertyRelative("name"), GUIContent.none);
-
-                    // Set indent back to what it was
-                    // EditorGUI.indentLevel = indent;
-
-                    // EditorGUI.EndProperty();
-
-                    // EditorGUI.BeginProperty(position, label, property);
-                    // EditorGUI.LabelField(position,label);
-                    // // string name = 
-                    // // Object noiseGenre;
-                    // NoiseGenre noiseGenre = (NoiseGenre)Enum.ToObject(typeof(NoiseGenre),
-                    //     property.FindPropertyRelative("noiseGenre").enumValueIndex);
-                    // // Debug.Log(noiseGenre);
-                    //
-                    // switch (noiseGenre)
-                    // {
-                    //     case NoiseGenre.Simplex:
-                    //         break;
-                    // }
-                    //
-                    // EditorGUI.EndProperty();
-                // }
-            // }
         }
     }
 }

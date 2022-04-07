@@ -1,5 +1,4 @@
-﻿using System;
-using Unity.Collections;
+﻿using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEditor;
@@ -17,6 +16,8 @@ namespace UnityTutorials.Pseudorandom_Noise
         [SerializeField] private DomainTransform domain = DomainTransform.Default;
         [SerializeField] private Settings noiseSettings = Settings.Default;
         [SerializeField] private NoiseResolver noiseResolver = new NoiseResolver();
+        
+        
 
         private NativeArray<float4> noise;
         private ComputeBuffer noiseBuffer;
@@ -47,47 +48,81 @@ namespace UnityTutorials.Pseudorandom_Noise
         [CanEditMultipleObjects]
         public class NoiseEditor : Editor
         {
+            private bool showNoiseConfig = false;
             private SerializedProperty m_NoiseProp;
+            private SerializedProperty m_NoiseGenre;
+            private SerializedProperty m_Dimension;
+            private SerializedProperty m_VoronoiFunctionType;
+            private SerializedProperty m_VoronoiDistanceType;
+            private SerializedProperty m_GradientFunctionType;
+            private SerializedProperty m_SimplexFunctionType;
+            private SerializedProperty m_ContinuousType;
+            private SerializedProperty m_LatticeType;
+            private SerializedProperty m_Turbulence;
 
             public void OnEnable()
             {
-                m_NoiseProp = serializedObject.FindProperty("noiseResolver");
+               m_NoiseProp = serializedObject.FindProperty("noiseResolver");
+               m_NoiseGenre = m_NoiseProp.FindPropertyRelative("noiseGenre");
+               m_Dimension = m_NoiseProp.FindPropertyRelative("dimension");
+               m_VoronoiFunctionType = m_NoiseProp.FindPropertyRelative("voronoiFunctionType");
+               m_VoronoiDistanceType = m_NoiseProp.FindPropertyRelative("voronoiDistanceType");
+               m_GradientFunctionType = m_NoiseProp.FindPropertyRelative("gradientFunctionType");
+               m_SimplexFunctionType = m_NoiseProp.FindPropertyRelative("simplexFunctionType");
+               m_ContinuousType = m_NoiseProp.FindPropertyRelative("continuousType");
+               m_LatticeType = m_NoiseProp.FindPropertyRelative("latticeType");
+               m_Turbulence = m_NoiseProp.FindPropertyRelative("turbulence");
+            }
+
+            private void OnNoiseResolverGUI()
+            {
+                showNoiseConfig = EditorGUILayout.Foldout(showNoiseConfig, "Noise Resolver", true);
+                if (!showNoiseConfig)
+                {
+                    return;
+                }
+                // var genreProp = m_NoiseProp.FindPropertyRelative("noiseGenre");
+                EditorGUILayout.PropertyField(m_NoiseGenre);
+                var genre = (NoiseGenre) m_NoiseGenre.enumValueIndex;
+                EditorGUILayout.PropertyField(m_Dimension);
+                switch (genre)
+                {
+                    case NoiseGenre.Simplex:
+                        EditorGUILayout.PropertyField(m_SimplexFunctionType);
+                        EditorGUILayout.PropertyField(m_Turbulence);
+                        break;
+                    case NoiseGenre.Gradient:
+                        EditorGUILayout.PropertyField(m_LatticeType);
+                        EditorGUILayout.PropertyField(m_ContinuousType);
+                        EditorGUILayout.PropertyField(m_GradientFunctionType);
+                        EditorGUILayout.PropertyField(m_Turbulence);
+                        break;
+                    case NoiseGenre.Voronoi:
+                        EditorGUILayout.PropertyField(m_LatticeType);
+                        EditorGUILayout.PropertyField(m_VoronoiFunctionType);
+                        EditorGUILayout.PropertyField(m_VoronoiDistanceType);
+                        break;
+                }
             }
 
             public override void OnInspectorGUI()
             {
-                // base.OnInspectorGUI();
                 EditorGUI.BeginChangeCheck();
                 serializedObject.UpdateIfRequiredOrScript();
-                NoiseGenre noiseGenre = (NoiseGenre)Enum.ToObject(typeof(NoiseGenre),
-                    m_NoiseProp.FindPropertyRelative("noiseGenre").enumValueIndex);
-                switch (noiseGenre)
+                SerializedProperty iterator = serializedObject.GetIterator();
+                for (bool enterChildren = true; iterator.NextVisible(enterChildren); enterChildren = false)
                 {
-                    case NoiseGenre.Simplex:
-                        DrawPropertiesExcluding(serializedObject,
-                            "noiseResolver.voronoiFunctionType",
-                            "noiseResolver.voronoiDistanceType",
-                            "noiseResolver.gradientFunctionType",
-                            "noiseResolver.continuousType",
-                            "noiseResolver.latticeType");
-                        break;
-                    case NoiseGenre.Gradient:
-                        DrawPropertiesExcluding(serializedObject,
-                            "noiseResolver.voronoiFunctionType",
-                            "noiseResolver.voronoiDistanceType",
-                            "noiseResolver.gradientFunctionType",
-                            "noiseResolver.continuousType",
-                            "noiseResolver.latticeType");
-                        break;
-                    case NoiseGenre.Voronoi:
-                        DrawPropertiesExcluding(serializedObject,
-                            "noiseResolver.voronoiFunctionType",
-                            "noiseResolver.voronoiDistanceType",
-                            "noiseResolver.gradientFunctionType",
-                            "noiseResolver.continuousType",
-                            "noiseResolver.latticeType");
-                        break;
+                    if (iterator.propertyPath == m_NoiseProp.propertyPath)
+                    {
+                        continue;
+                    }
+
+                    using (new EditorGUI.DisabledScope("m_Script" == iterator.propertyPath))
+                    {
+                        EditorGUILayout.PropertyField(iterator, true);
+                    }
                 }
+                OnNoiseResolverGUI();
                 serializedObject.ApplyModifiedProperties();
                 EditorGUI.EndChangeCheck();
             }

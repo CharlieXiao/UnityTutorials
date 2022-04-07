@@ -4,7 +4,6 @@ using Unity.Jobs;
 using Unity.Mathematics;
 
 using static Unity.Mathematics.math;
-using float3 = Unity.Mathematics.float3;
 using float3x4 = Unity.Mathematics.float3x4;
 
 namespace UnityTutorials.Pseudorandom_Noise

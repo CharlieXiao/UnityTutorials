@@ -31,6 +31,6 @@ namespace UnityTutorials.Pseudorandom_Noise
             return float4x3(v.c0 * invLength, v.c1 * invLength,v.c2 * invLength);
         }
 
-        public static float SQRT3 = 1.7320508075688772935274463415059f;
+        public const float SQRT3 = 1.7320508075688772935274463415059f;
     }
 }

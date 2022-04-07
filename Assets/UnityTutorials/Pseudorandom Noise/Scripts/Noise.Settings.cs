@@ -1,5 +1,4 @@
-﻿using Unity.Burst;
-using System;
+﻿using System;
 using UnityEngine;
 
 namespace UnityTutorials.Pseudorandom_Noise
