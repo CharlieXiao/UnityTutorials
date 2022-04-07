@@ -1,7 +1,7 @@
 ﻿using Unity.Mathematics;
 using static Unity.Mathematics.math;
 
-namespace UnityTutorials.Pseudorandom_Noise
+namespace PseudorandomNoise
 {
     // this file also contains definition for Noise
     // some kind of distributed code :)

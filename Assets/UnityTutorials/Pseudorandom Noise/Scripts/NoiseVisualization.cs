@@ -3,19 +3,19 @@ using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEditor;
 using UnityEngine;
-using static UnityTutorials.Pseudorandom_Noise.Noise;
-using static UnityTutorials.Pseudorandom_Noise.Noise.NoiseResolver;
+using static PseudorandomNoise.Noise;
+using static PseudorandomNoise.Noise.NoiseResolver;
 
 
-namespace UnityTutorials.Pseudorandom_Noise
+namespace PseudorandomNoise
 {
     public class NoiseVisualization : Visualization
     {
         private static int noiseId = Shader.PropertyToID("_Noise");
 
         [SerializeField] private DomainTransform domain = DomainTransform.Default;
-        [SerializeField] private Settings noiseSettings = Settings.Default;
-        [SerializeField] private NoiseResolver noiseResolver = new NoiseResolver();
+        [SerializeField] private Noise.Settings noiseSettings = Noise.Settings.Default;
+        [SerializeField] private Noise.NoiseResolver noiseResolver = new Noise.NoiseResolver();
         
         
 
@@ -83,21 +83,21 @@ namespace UnityTutorials.Pseudorandom_Noise
                 }
                 // var genreProp = m_NoiseProp.FindPropertyRelative("noiseGenre");
                 EditorGUILayout.PropertyField(m_NoiseGenre);
-                var genre = (NoiseGenre) m_NoiseGenre.enumValueIndex;
+                var genre = (Noise.NoiseResolver.NoiseGenre) m_NoiseGenre.enumValueIndex;
                 EditorGUILayout.PropertyField(m_Dimension);
                 switch (genre)
                 {
-                    case NoiseGenre.Simplex:
+                    case Noise.NoiseResolver.NoiseGenre.Simplex:
                         EditorGUILayout.PropertyField(m_SimplexFunctionType);
                         EditorGUILayout.PropertyField(m_Turbulence);
                         break;
-                    case NoiseGenre.Gradient:
+                    case Noise.NoiseResolver.NoiseGenre.Gradient:
                         EditorGUILayout.PropertyField(m_LatticeType);
                         EditorGUILayout.PropertyField(m_ContinuousType);
                         EditorGUILayout.PropertyField(m_GradientFunctionType);
                         EditorGUILayout.PropertyField(m_Turbulence);
                         break;
-                    case NoiseGenre.Voronoi:
+                    case Noise.NoiseResolver.NoiseGenre.Voronoi:
                         EditorGUILayout.PropertyField(m_LatticeType);
                         EditorGUILayout.PropertyField(m_VoronoiFunctionType);
                         EditorGUILayout.PropertyField(m_VoronoiDistanceType);

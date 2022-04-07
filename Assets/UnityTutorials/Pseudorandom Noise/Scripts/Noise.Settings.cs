@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace UnityTutorials.Pseudorandom_Noise
+namespace PseudorandomNoise
 {
     public static partial class Noise
     {

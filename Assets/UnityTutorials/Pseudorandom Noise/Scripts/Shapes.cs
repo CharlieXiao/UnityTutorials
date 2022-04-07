@@ -6,7 +6,7 @@ using Unity.Mathematics;
 using static Unity.Mathematics.math;
 using float3x4 = Unity.Mathematics.float3x4;
 
-namespace UnityTutorials.Pseudorandom_Noise
+namespace PseudorandomNoise
 {
     public static class Shapes
     {

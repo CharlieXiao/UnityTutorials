@@ -1,5 +1,5 @@
 ﻿using Unity.Mathematics;
-namespace UnityTutorials.Pseudorandom_Noise
+namespace PseudorandomNoise
 {
     [System.Serializable]
     public struct DomainTransform

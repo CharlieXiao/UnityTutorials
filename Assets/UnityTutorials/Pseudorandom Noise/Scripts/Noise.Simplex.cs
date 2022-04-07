@@ -1,8 +1,8 @@
 using Unity.Mathematics;
 using static Unity.Mathematics.math;
-using static UnityTutorials.Pseudorandom_Noise.MathExtensions;
+using static PseudorandomNoise.MathExtensions;
 
-namespace UnityTutorials.Pseudorandom_Noise
+namespace PseudorandomNoise
 {
     // what is simplex really? 
     // A simplex is the simplest possible polytope—an object with flat sides—

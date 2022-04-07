@@ -7,7 +7,7 @@ using Unity.Burst;
 
 using static Unity.Mathematics.math;
 
-namespace UnityTutorials.Pseudorandom_Noise
+namespace PseudorandomNoise
 {
     public class HashVisualization : Visualization
     {
