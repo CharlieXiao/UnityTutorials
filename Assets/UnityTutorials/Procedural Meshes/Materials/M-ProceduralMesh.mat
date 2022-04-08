@@ -22,7 +22,7 @@ Material:
   m_PrefabAsset: {fileID: 0}
   m_Name: M-ProceduralMesh
   m_Shader: {fileID: -6465566751694194690, guid: 5d47a26d59c37c14999c04c88eb94452, type: 3}
-  m_ShaderKeywords: 
+  m_ShaderKeywords: _RIPPLE
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -117,10 +117,11 @@ Material:
     - _Parallax: 0.005
     - _QueueControl: 0
     - _QueueOffset: 0
+    - _RIPPLE: 1
     - _ReceiveShadows: 1
     - _Ripple_Amplitude: 0.1
-    - _Ripple_Period: 2
-    - _Ripple_Speed: 0.055
+    - _Ripple_Period: 3
+    - _Ripple_Speed: 0.1
     - _Smoothness: 0.5
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
@@ -132,6 +133,6 @@ Material:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _Ripple_Origin: {r: 1, g: 0, b: 0, a: 0}
+    - _Ripple_Origin: {r: 0, g: 0, b: 0, a: 0}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
   m_BuildTextureStacks: []
