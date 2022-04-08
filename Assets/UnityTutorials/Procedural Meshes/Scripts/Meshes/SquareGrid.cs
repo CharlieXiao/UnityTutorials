@@ -27,7 +27,7 @@ namespace ProceduralMeshes.Meshes
             vertex.normal.y = 1.0f;
             vertex.tangent.xw = float2(1.0f, 1.0f);
             
-            var zCoordinates = float2(z, z + 0.9f) / Resolution - 0.5f;
+            var zCoordinates = float2(z, z + 1.0f) / Resolution - 0.5f;
             
             // 每一行其对应的z值都是固定的
             for (int x = 0; x < Resolution; ++x, vi+=4,ti+=2)

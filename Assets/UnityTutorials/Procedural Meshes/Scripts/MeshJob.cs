@@ -21,12 +21,9 @@ namespace ProceduralMeshes
         [WriteOnly]
         private S streams;
         
-        public void Execute(int index)
-        {
-            generator.Execute(index,streams);
-        }
+        public void Execute(int index) => generator.Execute(index,streams);
 
-        
+
 
         public static JobHandle ScheduleParallel(Mesh mesh,Mesh.MeshData meshData,int resolution, JobHandle dependency)
         {
@@ -34,7 +31,11 @@ namespace ProceduralMeshes
             job.generator.Resolution = resolution;
             // 执行之前先准备好数据
             job.streams.Setup(
-                meshData,job.generator.Bounds,job.generator.VertexCount,job.generator.IndexCount);
+                meshData,
+                // 设置mesh bounds，要不然读取不到bounds
+                mesh.bounds = job.generator.Bounds,
+                job.generator.VertexCount,
+                job.generator.IndexCount);
             return job.ScheduleParallel(job.generator.JobLength, 1, dependency);
         }
     }
