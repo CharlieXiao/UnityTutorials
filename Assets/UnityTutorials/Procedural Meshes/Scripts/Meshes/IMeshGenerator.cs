@@ -13,6 +13,6 @@ namespace ProceduralMeshes.Meshes
         Bounds Bounds { get; }
         // using this, we could make Generator adapt to different stream types
         // single stream, multi stream, mix stream
-        void Execute<S>(int i, S streams) where S : struct, IMeshStream;
+        void Execute<S>(int u, S streams) where S : struct, IMeshStream;
     }
 }

@@ -16,18 +16,18 @@ namespace ProceduralMeshes.Meshes
         public Bounds Bounds => new Bounds(Vector3.zero, new Vector3(1.0f,0.0f, 1.0f));
 
         // this can be called from job thread many times
-        public void Execute<S>(int z, S streams) where S : struct, IMeshStream
+        public void Execute<S>(int u, S streams) where S : struct, IMeshStream
         {
             // vertexId,triangleId
             // every square contains 4 vertices, and two triangles
             // in one row, there will be resolution * original
-            int vi = 4 * Resolution * z, ti = 2 * Resolution * z;
+            int vi = 4 * Resolution * u, ti = 2 * Resolution * u;
             
             var vertex = new Vertex();
             vertex.normal.y = 1.0f;
             vertex.tangent.xw = float2(1.0f, 1.0f);
             
-            var zCoordinates = float2(z, z + 1.0f) / Resolution - 0.5f;
+            var zCoordinates = float2(u, u + 1.0f) / Resolution - 0.5f;
             
             // 每一行其对应的z值都是固定的
             for (int x = 0; x < Resolution; ++x, vi+=4,ti+=2)

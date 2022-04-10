@@ -15,10 +15,10 @@ namespace ProceduralMeshes.Meshes
         public Bounds Bounds =>
             new Bounds(Vector3.zero, new Vector3(1.0f + 0.5f / Resolution, 0.0f, sqrt(3.0f) / 2.0f));
 
-        public void Execute<S>(int z, S streams) where S : struct, IMeshStream
+        public void Execute<S>(int u, S streams) where S : struct, IMeshStream
         {
             // as usual, we will draw the grid row by row
-            int vi = (Resolution + 1) * z, ti = 2 * Resolution * (z - 1);
+            int vi = (Resolution + 1) * u, ti = 2 * Resolution * (u - 1);
 
             int iA = -Resolution - 2, iB = -Resolution - 1, iC = -1, iD = 0;
             var tA = int3(iA, iC, iD);
@@ -27,7 +27,7 @@ namespace ProceduralMeshes.Meshes
             float xOffset = -0.25f;
             float uOffset = 0.0f;
 
-            if ((z & 1) == 1)
+            if ((u & 1) == 1)
             {
                 xOffset = 0.25f;
                 uOffset = 0.5f / (Resolution + 0.5f);
@@ -43,7 +43,7 @@ namespace ProceduralMeshes.Meshes
 
             vertex.position.x = xOffset;
             // scale height, to make a equalateral
-            vertex.position.z = ((float)z / Resolution - 0.5f) * sqrt(3f) / 2f;
+            vertex.position.z = ((float)u / Resolution - 0.5f) * sqrt(3f) / 2f;
 
             vertex.texCoord0.x = uOffset;
             // 1 + 0.5 * Resolution is the actual length of grid
@@ -57,7 +57,7 @@ namespace ProceduralMeshes.Meshes
                 vertex.position.x = (float)x / Resolution + xOffset;
                 vertex.texCoord0.x = x / (Resolution + 0.5f) + uOffset;
                 streams.SetVertex(vi, vertex);
-                if (z < 1)
+                if (u < 1)
                 {
                     continue;
                 }

@@ -24,8 +24,8 @@ namespace ProceduralMeshes.Meshes {
 
 		public int Resolution { get; set; }
 
-		public void Execute<S> (int x, S streams) where S : struct, IMeshStream {
-			int vi = 7 * Resolution * x, ti = 6 * Resolution * x;
+		public void Execute<S> (int u, S streams) where S : struct, IMeshStream {
+			int vi = 7 * Resolution * u, ti = 6 * Resolution * u;
 
 			float h = sqrt(3f) / 4f;
 
@@ -33,11 +33,11 @@ namespace ProceduralMeshes.Meshes {
 
 			if (Resolution > 1) {
 				centerOffset.x = -0.375f * (Resolution - 1);
-				centerOffset.y = (((x & 1) == 0 ? 0.5f : 1.5f) - Resolution) * h;
+				centerOffset.y = (((u & 1) == 0 ? 0.5f : 1.5f) - Resolution) * h;
 			}
 
 			for (int z = 0; z < Resolution; z++, vi += 7, ti += 6) {
-				var center = (float2(0.75f * x, 2f * h * z) + centerOffset) / Resolution;
+				var center = (float2(0.75f * u, 2f * h * z) + centerOffset) / Resolution;
 				var xCoordinates =
 					center.x + float4(-0.5f, -0.25f, 0.25f, 0.5f) / Resolution;
 				var zCoordinates = center.y + float2(h, -h) / Resolution;

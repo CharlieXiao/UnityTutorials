@@ -19,10 +19,10 @@ namespace ProceduralMeshes.Meshes
             0f, 0.75f + 0.25f / Resolution));
 
         // this can be called from job thread many times
-        public void Execute<S>(int z, S streams) where S : struct, IMeshStream
+        public void Execute<S>(int u, S streams) where S : struct, IMeshStream
         {
             // 每一个六边形包含7个顶点，6个三角形，计算其实很简单，只需要逐个计算出点坐标，然后添加即可
-            int vi = 7 * Resolution * z, ti = 6 * Resolution * z;
+            int vi = 7 * Resolution * u, ti = 6 * Resolution * u;
 
             float2 centerOffset = 0.0f;
 
@@ -33,7 +33,7 @@ namespace ProceduralMeshes.Meshes
             if (Resolution > 1)
             {
                 // 中心点的偏移，这里要求是mesh对应的bounds中心位于float3(0.0f,0.0f,0.0f)，因此高度和宽度需要进行微调
-                centerOffset.x = (((z & 1) == 0 ? 0.5f : 1.5f) - Resolution) * h;
+                centerOffset.x = (((u & 1) == 0 ? 0.5f : 1.5f) - Resolution) * h;
                 centerOffset.y = -0.375f * (Resolution - 1);
             }
 
@@ -44,7 +44,7 @@ namespace ProceduralMeshes.Meshes
 
             for (int x = 0; x < Resolution; ++x, vi += 7, ti += 6)
             {
-                var center = (float2(2.0f * h * x, 0.75f * z) + centerOffset) / Resolution;
+                var center = (float2(2.0f * h * x, 0.75f * u) + centerOffset) / Resolution;
                 // all offset by x and y coordinate
                 var xCoordinates = center.x + float2(-h, h) / Resolution;
                 var zCoordinates = center.y + float4(-0.5f, -0.25f, 0.25f, 0.5f) / Resolution;
